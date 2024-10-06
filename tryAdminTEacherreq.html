@@ -1,0 +1,14 @@
+<!-- accounts/admin_teacher_requests.html -->
+<h2>Pending Teacher Requests</h2>
+{% if pending_requests %}
+    {% for request in pending_requests %}
+        <p>{{ request.student.username }}-{{ request.student.phone_number}} requested {{ request.teacher.username }} - {{ request.teacher.phone_number}}</p>
+        <form method="post" action="{% url 'approve_teacher_request' request.id %}">
+            {% csrf_token %}
+            <button name="action" value="accept" type="submit">Accept</button>
+            <button name="action" value="decline" type="submit">Decline</button>
+        </form>
+    {% endfor %}
+{% else %}
+    <p>No pending requests found.</p>
+{% endif %}

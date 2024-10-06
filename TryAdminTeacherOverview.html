@@ -1,0 +1,55 @@
+<h2>Accepted Teachers Overview</h2>
+<ul>
+    {% for teacher in teachers %}
+    <li>
+        <h3>{{ teacher.full_name }} ({{ teacher.username }})</h3>
+        <p>Town: {{ teacher.town }}</p>
+        <p>Subject: {{ teacher.subject }}</p>
+        <p>Phone Number: {{ teacher.phone_number }}</p>
+
+        <!-- Check if NIC photo and A-level result sheet exist before displaying links -->
+        <p>
+            {% if teacher.nic_photo %}
+                <a href="{{ teacher.nic_photo.url }}" target="_blank">View NIC Photo</a>
+            {% else %}
+                <span>No NIC Photo available</span>
+            {% endif %}
+            |
+            {% if teacher.alevel_result_sheet %}
+                <a href="{{ teacher.alevel_result_sheet.url }}" target="_blank">View A-Level Result Sheet</a>
+            {% else %}
+                <span>No A-Level Result Sheet available</span>
+            {% endif %}
+        </p>
+        
+        <!-- Students taught by the teacher -->
+        <h4>Students:</h4>
+        <ul>
+            {% for request in teacher.teacher_requests.all %}
+                {% if request.status == 'accepted' %}
+                    <li>{{ request.student.full_name }} ({{ request.student.username }})</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        
+        <!-- Confirmed classes of the teacher -->
+        <h4>Confirmed Classes:</h4>
+        <ul>
+            {% for schedule in teacher.teacher_classes.all %}
+                {% if schedule.status == 'confirmed' %}
+                    <li>
+                        <strong>Student:</strong> {{ schedule.student.username }} <br>
+                        <strong>Confirmed Time:</strong> {{ schedule.confirmed_time|date:"Y-m-d H:i" }}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        
+        <!-- Button to remove the teacher -->
+        <form action="{% url 'delete_teacher' teacher.id %}" method="POST" style="margin-top: 10px;">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded">Remove Teacher</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>

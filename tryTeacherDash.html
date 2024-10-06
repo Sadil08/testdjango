@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+</head>
+<body>
+    <h2>Welcome to your Teacher Dashboard, {{ teacher.username }}!</h2>
+    <p>Here you can view your schedule, classes, and propose times for students.</p>
+    <a href="{% url 'logout' %}">Logout</a>
+
+    <h2>Assigned Students</h2>
+    
+    {% if students %}
+    <p>Your assigned students are:</p>
+    <ul>
+        {% for student in students %}
+            <li>{{ student.username }}</li>
+            <h3>Your Class Schedule with {{ student.username }}</h3>
+            <ul>
+                {% for schedule in class_schedules %}
+                <!-- Only show schedules that belong to this student -->
+                {% if schedule.student == student %}
+                    {% if schedule.status == 'pending' %}
+                        <li>
+                            <strong>Student's Proposed Time:</strong> {{ schedule.proposed_time_student }} <br>
+                            <strong>Your Proposed Time:</strong> {{ schedule.proposed_time_teacher }} <br>
+                
+                        <!-- Only show accept/decline buttons if the teacher proposes the time -->
+                        {% if  schedule.proposed_time_student and not schedule.proposed_time_teacher %}
+                            <form action="{% url 'confirm_time' schedule.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit">Confirm</button>
+                            </form>
+                
+                            <form action="{% url 'decline_time' schedule.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit">Decline</button>
+                            </form>
+                        {% endif %}
+                        </li>
+                    {% elif schedule.status == 'confirmed' %}
+                        <li>
+                            <strong>Confirmed Time:</strong> {{ schedule.confirmed_time }} <br>
+                        </li>
+                    {% elif schedule.status == 'declined' %}
+                        <li>
+                            <strong>Schedule Declined</strong>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            </ul>
+
+            <h3>Propose a Class Time</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="student" value="{{ student.id }}">
+                <!-- Only display the teacher's proposed time field -->
+                {{ form.proposed_time_teacher.label_tag }} {{ form.proposed_time_teacher }} <br>
+                <button type="submit">Propose Time</button>
+            </form>
+
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>You do not have any assigned students yet.</p>
+    {% endif %}
+</body>
+</html>
